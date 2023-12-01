@@ -1,4 +1,4 @@
-use aoc2023::timer::Timer;
+use aoc2023::{timer::Timer, tools};
 
 fn main() {
     {
