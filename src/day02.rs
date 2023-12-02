@@ -5,13 +5,13 @@ const MAX_RED: u32 = 12;
 const MAX_GREEN: u32 = 13;
 const MAX_BLUE: u32 = 14;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Game {
     id: u32,
     rounds: Vec<Round>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Round {
     red: u32,
     green: u32,
@@ -19,14 +19,15 @@ struct Round {
 }
 
 pub fn solve(data: Vec<String>) {
-    println!("Day 2, part one: {}", part_one(&data));
-    println!("Day 2, part two: {}", part_two(&data));
+    let parsed_input: Vec<Game> = data.iter().map(parse_input).collect();
+
+    println!("Day 2, part one: {}", part_one(&parsed_input));
+    println!("Day 2, part two: {}", part_two(&parsed_input));
 }
 
-fn part_one(input: &[String]) -> u32 {
-    let games: Vec<Game> = input
+fn part_one(games: &[Game]) -> u32 {
+    let games: Vec<&Game> = games
         .iter()
-        .map(parse_input)
         .filter(|g| {
             g.rounds.iter().fold(true, |acc, curr| {
                 acc && (curr.red <= MAX_RED && curr.green <= MAX_GREEN && curr.blue <= MAX_BLUE)
@@ -37,10 +38,9 @@ fn part_one(input: &[String]) -> u32 {
     games.iter().map(|g| g.id).sum()
 }
 
-fn part_two(input: &[String]) -> u32 {
-    input
+fn part_two(games: &[Game]) -> u32 {
+    games
         .iter()
-        .map(parse_input)
         .map(|g| {
             g.rounds.iter().fold(
                 Round {
@@ -109,7 +109,8 @@ mod tests {
         ]
         .into_iter()
         .map(String::from)
-        .collect::<Vec<String>>();
+        .map(|c| parse_input(&c))
+        .collect::<Vec<Game>>();
 
         assert_eq!(part_one(&input), 8);
     }
@@ -125,7 +126,8 @@ mod tests {
         ]
         .into_iter()
         .map(String::from)
-        .collect::<Vec<String>>();
+        .map(|c| parse_input(&c))
+        .collect::<Vec<Game>>();
 
         assert_eq!(part_two(&input), 2286);
     }
