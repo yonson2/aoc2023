@@ -29,15 +29,7 @@ fn part_one(input: &[String]) -> u32 {
         .map(parse_input)
         .filter(|g| {
             g.rounds.iter().fold(true, |acc, curr| {
-                if !acc {
-                    return acc;
-                }
-
-                if curr.red > MAX_RED || curr.green > MAX_GREEN || curr.blue > MAX_BLUE {
-                    return false;
-                }
-
-                acc
+                acc && (curr.red <= MAX_RED && curr.green <= MAX_GREEN && curr.blue <= MAX_BLUE)
             })
         })
         .collect();
