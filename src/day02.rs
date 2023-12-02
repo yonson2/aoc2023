@@ -5,13 +5,11 @@ const MAX_RED: u32 = 12;
 const MAX_GREEN: u32 = 13;
 const MAX_BLUE: u32 = 14;
 
-#[derive(Debug, Clone)]
 struct Game {
     id: u32,
     rounds: Vec<Round>,
 }
 
-#[derive(Debug, Clone)]
 struct Round {
     red: u32,
     green: u32,
