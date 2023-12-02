@@ -1,4 +1,4 @@
-use aoc2023::{day01, day01_revised, timer::Timer, tools};
+use aoc2023::{day01, day01_revised, day02, timer::Timer, tools};
 
 fn main() {
     {
@@ -10,5 +10,11 @@ fn main() {
         let _timer = Timer::new();
         let data = tools::read_string("data/day01");
         day01_revised::solve(data);
+    }
+
+    {
+        let _timer = Timer::new();
+        let data = tools::read_string("data/day02");
+        day02::solve(data);
     }
 }
