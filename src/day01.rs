@@ -10,7 +10,7 @@ pub fn solve(data: Vec<String>) {
 
 fn part_one(input: &[String]) -> u32 {
     input
-        .into_iter()
+        .iter()
         .map(|l| {
             l.chars()
                 .filter_map(|a| a.to_digit(10))
@@ -26,7 +26,7 @@ fn part_one(input: &[String]) -> u32 {
 
 fn part_two(input: &[String]) -> u32 {
     let correct_input: Vec<String> = input
-        .into_iter()
+        .iter()
         .map(|l| replace_text_with_numeric_form(l.clone()))
         .collect();
 
@@ -58,12 +58,12 @@ fn replace_text_with_numeric_form(text: String) -> String {
         }
     }
     if finds.is_empty() {
-        return text;
+        text
     } else {
         finds.sort_by(|a, b| a.1.cmp(&b.1));
         let word_to_replace = finds[0].0;
         let new_text = text.replacen(word_to_replace, replacements[word_to_replace], 1);
-        return replace_text_with_numeric_form(new_text);
+        replace_text_with_numeric_form(new_text)
     }
 }
 

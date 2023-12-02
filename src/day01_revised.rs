@@ -19,8 +19,8 @@ pub fn solve(data: Vec<String>) {
 fn get_sum(input: &[String], pattern: &[&str]) -> u32 {
     let ac = AhoCorasick::new(pattern).expect("Invalid pattern");
 
-    input.into_iter().fold(0, |acc, curr| {
-        let mut iter = ac.find_overlapping_iter(&curr).peekable();
+    input.iter().fold(0, |acc, curr| {
+        let mut iter = ac.find_overlapping_iter(curr).peekable();
         let left = match iter
             .peek()
             .expect("must have a first digit")

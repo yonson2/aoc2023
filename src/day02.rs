@@ -25,7 +25,7 @@ pub fn solve(data: Vec<String>) {
 
 fn part_one(input: &[String]) -> u32 {
     let games: Vec<Game> = input
-        .into_iter()
+        .iter()
         .map(parse_input)
         .filter(|g| {
             g.rounds.iter().fold(true, |acc, curr| {
@@ -47,7 +47,7 @@ fn part_one(input: &[String]) -> u32 {
 
 fn part_two(input: &[String]) -> u32 {
     input
-        .into_iter()
+        .iter()
         .map(parse_input)
         .map(|g| {
             g.rounds.iter().fold(
@@ -67,7 +67,7 @@ fn part_two(input: &[String]) -> u32 {
 }
 
 fn parse_input(line: &String) -> Game {
-    let split = line.split(":").collect::<Vec<&str>>();
+    let split = line.split(':').collect::<Vec<&str>>();
     let (game, rounds) = split.split_at(1);
 
     let id = game // getting the id like this is not good but its fun.
@@ -82,7 +82,7 @@ fn parse_input(line: &String) -> Game {
     let rounds = rounds
         .first()
         .expect(&format!("missing rounds for game {}", id))
-        .split(";")
+        .split(';')
         .map(str::trim)
         .map(|r| {
             let mut round = Round {
