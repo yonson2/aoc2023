@@ -1,4 +1,5 @@
 use lazy_regex::regex_captures;
+use std::cmp;
 
 const MAX_RED: u32 = 12;
 const MAX_GREEN: u32 = 13;
@@ -49,30 +50,20 @@ fn part_two(input: &[String]) -> u32 {
         .into_iter()
         .map(parse_input)
         .map(|g| {
-            let minimum_round = g.rounds.iter().fold(
+            g.rounds.iter().fold(
                 Round {
                     red: 0,
                     green: 0,
                     blue: 0,
                 },
-                |mut acc, curr| {
-                    if curr.red > acc.red {
-                        acc.red = curr.red
-                    }
-                    if curr.blue > acc.blue {
-                        acc.blue = curr.blue
-                    }
-                    if curr.green > acc.green {
-                        acc.green = curr.green
-                    }
-                    acc
+                |acc, curr| Round {
+                    red: cmp::max(acc.red, curr.red),
+                    green: cmp::max(acc.green, curr.green),
+                    blue: cmp::max(acc.blue, curr.blue),
                 },
-            );
-
-            minimum_round
+            )
         })
-        .map(|r| r.red * r.green * r.blue)
-        .sum()
+        .fold(0, |acc, curr| acc + curr.red * curr.green * curr.blue)
 }
 
 fn parse_input(line: &String) -> Game {
