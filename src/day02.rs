@@ -85,29 +85,17 @@ fn parse_input(line: &String) -> Game {
         .split(';')
         .map(str::trim)
         .map(|r| {
-            let mut round = Round {
-                red: 0,
-                green: 0,
-                blue: 0,
-            };
+            let (_, red) = regex_captures!(r#"(\d+) red"#, r).unwrap_or(("", "0"));
+            let (_, green) = regex_captures!(r#"(\d+) green"#, r).unwrap_or(("", "0"));
+            let (_, blue) = regex_captures!(r#"(\d+) blue"#, r).unwrap_or(("", "0"));
 
-            let red = regex_captures!(r#"(\d+) red"#, r);
-            let green = regex_captures!(r#"(\d+) green"#, r);
-            let blue = regex_captures!(r#"(\d+) blue"#, r);
+            let (red, green, blue) = (
+                red.parse::<u32>().expect("valid red cube number"),
+                green.parse::<u32>().expect("valid green cube number"),
+                blue.parse::<u32>().expect("valid blue cube number"),
+            );
 
-            if let Some((_, red_cubes)) = red {
-                round.red = red_cubes.parse::<u32>().expect("valid cube number");
-            }
-
-            if let Some((_, green_cubes)) = green {
-                round.green = green_cubes.parse::<u32>().expect("valid cube number");
-            }
-
-            if let Some((_, blue_cubes)) = blue {
-                round.blue = blue_cubes.parse::<u32>().expect("valid cube number");
-            }
-
-            round
+            Round { red, green, blue }
         })
         .collect::<Vec<Round>>();
 
