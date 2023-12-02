@@ -1,19 +1,16 @@
 use aho_corasick::AhoCorasick;
 
-const PATTERN_PART_ONE: &[&str; 9] = &["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const PATTERN_PART_TWO: &[&str; 18] = &[
+const PATTERN: &[&str; 18] = &[
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "one", "two", "three", "four", "five", "six",
     "seven", "eight", "nine",
 ];
+
 pub fn solve(data: Vec<String>) {
     println!(
         "Day 1 Revised, part one: {}",
-        get_sum(&data, PATTERN_PART_ONE)
+        get_sum(&data, &PATTERN[0..9])
     );
-    println!(
-        "Day 1 Revised, part two: {}",
-        get_sum(&data, PATTERN_PART_TWO)
-    );
+    println!("Day 1 Revised, part two: {}", get_sum(&data, PATTERN));
 }
 
 fn get_sum(input: &[String], pattern: &[&str]) -> u32 {
@@ -60,7 +57,7 @@ mod tests {
             .map(String::from)
             .collect::<Vec<String>>();
 
-        assert_eq!(get_sum(&input, PATTERN_PART_ONE), 142);
+        assert_eq!(get_sum(&input, &PATTERN[0..9]), 142);
     }
 
     #[test]
@@ -79,6 +76,6 @@ mod tests {
         .map(String::from)
         .collect::<Vec<String>>();
 
-        assert_eq!(get_sum(&input, PATTERN_PART_TWO), 295);
+        assert_eq!(get_sum(&input, PATTERN), 295);
     }
 }
