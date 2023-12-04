@@ -20,100 +20,6 @@ fn part_two(gears: &HashMap<(usize, usize), Vec<usize>>) -> usize {
         .sum()
 }
 
-struct EngineNumber {
-    y_start: usize,
-    y_end: usize,
-    x: usize,
-    value: usize,
-}
-
-struct EngineMap {
-    numbers: Vec<EngineNumber>,
-    gears_with_numbers: HashMap<(usize, usize), Vec<usize>>,
-}
-
-#[derive(Clone)]
-enum EnginePiece {
-    Numeric(char),
-    Symbol(char),
-    Period,
-}
-
-impl EnginePiece {
-    fn is_engine_part(&self, x: i32, y: i32, grid: &Grid<Self>) -> bool {
-        match *self {
-            Self::Period | Self::Symbol(_) => false,
-            Self::Numeric(_) => {
-                for i in -1..=1 {
-                    if (i + x) < 0 {
-                        continue;
-                    }
-                    for j in -1..=1 {
-                        if (j + y) < 0 {
-                            continue;
-                        }
-                        let x: usize = (x + i).try_into().unwrap();
-                        let y: usize = (y + j).try_into().unwrap();
-                        if let Some(Self::Symbol(_)) = grid.get(x, y) {
-                            return true;
-                        }
-                    }
-                }
-                false
-            }
-        }
-    }
-}
-
-fn get_engine_number(
-    numbers: Vec<(usize, usize, char)>,
-    grid: &Grid<EnginePiece>,
-) -> Option<EngineNumber> {
-    if numbers.iter().any(|(x, y, g)| {
-        EnginePiece::Numeric(g.clone()).is_engine_part(
-            x.clone().try_into().unwrap(),
-            y.clone().try_into().unwrap(),
-            grid,
-        )
-    }) {
-        let (mut y_start, mut y_end, mut x) = (0, 0, 0);
-        let value = numbers
-            .iter()
-            .enumerate()
-            .map(|(i, n)| {
-                if i == 0 {
-                    y_start = n.1;
-                    x = n.0;
-                }
-                if (i + 1) == numbers.len() {
-                    y_end = n.1;
-                }
-                n.2
-            })
-            .collect::<String>()
-            .parse::<usize>()
-            .expect("valid number");
-
-        Some(EngineNumber {
-            y_start,
-            y_end,
-            x,
-            value,
-        })
-    } else {
-        None
-    }
-}
-
-fn parse_input_line(line: &String) -> Vec<EnginePiece> {
-    line.chars()
-        .map(|c| match c {
-            c if c.is_numeric() => EnginePiece::Numeric(c),
-            c if c == '.' => EnginePiece::Period,
-            c => EnginePiece::Symbol(c),
-        })
-        .collect()
-}
 fn parse_input(input: &[String]) -> EngineMap {
     let mut grid: Grid<EnginePiece> = grid![];
     let _ = input
@@ -161,33 +67,11 @@ fn parse_input(input: &[String]) -> EngineMap {
     numbers.iter().for_each(|n| {
         let mut different_gears = HashSet::new();
         for y in n.y_start..=n.y_end {
-            //Please don't look at this monstruosity, I'm too tired to think of a proper way of
-            //potentially subtracting -1 to an untyped integer an overflowing programatically.
-            if let Some(EnginePiece::Symbol('*')) =
-                grid.get(n.x.saturating_sub(1), y.saturating_sub(1))
-            {
-                different_gears.insert((n.x.saturating_sub(1), y.saturating_sub(1)));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x.saturating_sub(1), y) {
-                different_gears.insert((n.x.saturating_sub(1), y));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x, y.saturating_sub(1)) {
-                different_gears.insert((n.x, y.saturating_sub(1)));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x + 1, y) {
-                different_gears.insert((n.x + 1, y));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x, y + 1) {
-                different_gears.insert((n.x, y + 1));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x + 1, y + 1) {
-                different_gears.insert((n.x + 1, y + 1));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x + 1, y.saturating_sub(1)) {
-                different_gears.insert((n.x + 1, y.saturating_sub(1)));
-            }
-            if let Some(EnginePiece::Symbol('*')) = grid.get(n.x.saturating_sub(1), y + 1) {
-                different_gears.insert((n.x.saturating_sub(1), y + 1));
+            let neighbors = grid.get_neighbors(n.x, y);
+            for n in neighbors {
+                if let (nx, ny, Some(EnginePiece::Symbol('*'))) = n {
+                    different_gears.insert((nx, ny));
+                }
             }
         }
         for (x, y) in different_gears {
@@ -198,6 +82,112 @@ fn parse_input(input: &[String]) -> EngineMap {
     EngineMap {
         numbers,
         gears_with_numbers: gears,
+    }
+}
+
+fn parse_input_line(line: &String) -> Vec<EnginePiece> {
+    line.chars()
+        .map(|c| match c {
+            c if c.is_numeric() => EnginePiece::Numeric(c),
+            c if c == '.' => EnginePiece::Period,
+            c => EnginePiece::Symbol(c),
+        })
+        .collect()
+}
+
+fn get_engine_number(
+    numbers: Vec<(usize, usize, char)>,
+    grid: &Grid<EnginePiece>,
+) -> Option<EngineNumber> {
+    if numbers
+        .iter()
+        .any(|(x, y, g)| EnginePiece::Numeric(g.clone()).is_engine_part(*x, *y, grid))
+    {
+        let (mut y_start, mut y_end, mut x) = (0, 0, 0);
+        let value = numbers
+            .iter()
+            .enumerate()
+            .map(|(i, n)| {
+                if i == 0 {
+                    y_start = n.1;
+                    x = n.0;
+                }
+                if (i + 1) == numbers.len() {
+                    y_end = n.1;
+                }
+                n.2
+            })
+            .collect::<String>()
+            .parse::<usize>()
+            .expect("valid number");
+
+        Some(EngineNumber {
+            y_start,
+            y_end,
+            x,
+            value,
+        })
+    } else {
+        None
+    }
+}
+
+struct EngineNumber {
+    y_start: usize,
+    y_end: usize,
+    x: usize,
+    value: usize,
+}
+
+struct EngineMap {
+    numbers: Vec<EngineNumber>,
+    gears_with_numbers: HashMap<(usize, usize), Vec<usize>>,
+}
+
+#[derive(Clone)]
+enum EnginePiece {
+    Numeric(char),
+    Symbol(char),
+    Period,
+}
+
+impl EnginePiece {
+    fn is_engine_part(&self, x: usize, y: usize, grid: &Grid<Self>) -> bool {
+        match *self {
+            Self::Period | Self::Symbol(_) => false,
+            Self::Numeric(_) => grid
+                .get_neighbors(x, y)
+                .iter()
+                .filter(|(_, _, n)| n.is_some())
+                .any(|(_, _, x)| match x.unwrap() {
+                    Self::Symbol(_) => true,
+                    _ => false,
+                }),
+        }
+    }
+}
+
+trait LookAround {
+    fn get_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize, Option<&EnginePiece>)>;
+}
+
+impl LookAround for Grid<EnginePiece> {
+    fn get_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize, Option<&EnginePiece>)> {
+        let neighbors = [
+            (row.wrapping_sub(1), col),
+            (row.wrapping_add(1), col),
+            (row, col.wrapping_sub(1)),
+            (row, col.wrapping_add(1)),
+            (row.wrapping_sub(1), col.wrapping_sub(1)),
+            (row.wrapping_sub(1), col.wrapping_add(1)),
+            (row.wrapping_add(1), col.wrapping_sub(1)),
+            (row.wrapping_add(1), col.wrapping_add(1)),
+        ];
+
+        neighbors
+            .iter()
+            .map(|(r, c)| (*r, *c, self.get(*r, *c)))
+            .collect()
     }
 }
 
