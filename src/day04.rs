@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    iter::repeat,
-};
+use std::collections::{BTreeMap, HashSet};
 
 use lazy_regex::regex_captures;
 
