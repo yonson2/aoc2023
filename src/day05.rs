@@ -3,19 +3,19 @@ use rayon::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 struct Map {
-    source: usize,
-    destination: usize,
-    range: usize,
+    source: u64,
+    destination: u64,
+    range: u64,
 }
 
 impl Map {
-    fn source_contains(&self, input: usize) -> bool {
-        (input >= self.source) && (input <= self.source + self.range)
+    fn source_contains(&self, input: u64) -> bool {
+        (input >= self.source) && (input < self.source + self.range)
     }
 }
 
 /// transform takes an input (i.e. seed) and its maps and returns the next input (i.e. soil)
-fn transform(input: usize, maps: &[Map]) -> Option<usize> {
+fn transform(input: u64, maps: &[Map]) -> Option<u64> {
     for map in maps {
         if map.source_contains(input) {
             let diff = input - map.source;
@@ -31,26 +31,24 @@ pub fn solve(input: String) {
     println!("Day 5, part two: {}", part_two(seeds.clone(), maps.clone()));
 }
 
-fn part_one(seeds: Vec<usize>, maps: Vec<Vec<Map>>) -> usize {
-    let mut locations = seeds
+fn part_one(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
+    seeds
         .par_iter()
         .map(|&s| {
             maps.iter()
                 .fold(s, |acc, curr| transform(acc, curr).unwrap_or(acc))
         })
-        .collect::<Vec<_>>();
-    locations.sort();
-
-    *locations.first().unwrap()
+        .min()
+        .unwrap()
 }
 
-fn part_two(seeds: Vec<usize>, maps: Vec<Vec<Map>>) -> usize {
+fn part_two(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
     let actual_seeds = seeds
         .chunks_exact(2)
         .map(|seed_and_range| {
             let seed = seed_and_range[0].clone();
             let mut seeds = vec![];
-            for n in 0..seed_and_range[1] {
+            for n in 0..(seed_and_range[1]) {
                 seeds.push(seed + n);
             }
             seeds
@@ -61,7 +59,7 @@ fn part_two(seeds: Vec<usize>, maps: Vec<Vec<Map>>) -> usize {
     part_one(actual_seeds, maps)
 }
 
-fn parse_input(input: String) -> (Vec<usize>, Vec<Vec<Map>>) {
+fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
     let input = input.split_once("\n").unwrap();
 
     let seeds = &input
@@ -70,7 +68,7 @@ fn parse_input(input: String) -> (Vec<usize>, Vec<Vec<Map>>) {
         .unwrap()
         .1
         .split(" ")
-        .map(|s| s.parse::<usize>().expect("valid seed"))
+        .map(|s| s.parse::<u64>().expect("valid seed"))
         .collect::<Vec<_>>();
 
     let maps = &input
@@ -85,9 +83,9 @@ fn parse_input(input: String) -> (Vec<usize>, Vec<Vec<Map>>) {
                     let (_, destination, source, range) =
                         regex_captures!(r#"(\d+) (\d+) (\d+)"#, c).expect("valid map line");
                     let (destination, source, range) = (
-                        destination.parse::<usize>().expect("valid destination"),
-                        source.parse::<usize>().expect("valid source"),
-                        range.parse::<usize>().expect("valid range"),
+                        destination.parse::<u64>().expect("valid destination"),
+                        source.parse::<u64>().expect("valid source"),
+                        range.parse::<u64>().expect("valid range"),
                     );
                     Map {
                         source,
