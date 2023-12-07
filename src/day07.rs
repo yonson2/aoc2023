@@ -12,26 +12,7 @@ pub fn solve(input: Vec<String>) {
 }
 
 fn part_one(mut rounds: Vec<Round>) -> usize {
-    rounds.sort_by(
-        |ra, rb| match ra.hand.0.get_rank() == rb.hand.0.get_rank() {
-            true => {
-                let pairs = zip(&ra.hand.0, &rb.hand.0);
-                for (ca, cb) in pairs {
-                    if !ca.eq(&cb) {
-                        return cb.cmp(&ca);
-                    }
-                }
-                return Ordering::Equal;
-            }
-            false => ra.hand.0.get_rank().cmp(&rb.hand.0.get_rank()),
-        },
-    );
-
-    rounds
-        .iter()
-        .enumerate()
-        .map(|(i, r)| r.bid * (rounds.len() - i))
-        .sum()
+    rounds.points()
 }
 
 fn part_two(rounds: Vec<Round>) -> usize {
@@ -55,26 +36,7 @@ fn part_two(rounds: Vec<Round>) -> usize {
         })
         .collect::<Vec<_>>();
 
-    rounds.sort_by(
-        |ra, rb| match ra.hand.0.get_rank() == rb.hand.0.get_rank() {
-            true => {
-                let pairs = zip(&ra.hand.0, &rb.hand.0);
-                for (ca, cb) in pairs {
-                    if !ca.eq(&cb) {
-                        return cb.cmp(&ca);
-                    }
-                }
-                return Ordering::Equal;
-            }
-            false => ra.hand.0.get_rank().cmp(&rb.hand.0.get_rank()),
-        },
-    );
-
-    rounds
-        .iter()
-        .enumerate()
-        .map(|(i, r)| r.bid * (rounds.len() - i))
-        .sum()
+    rounds.points()
 }
 
 fn parse(input: Vec<String>) -> Vec<Round> {
@@ -196,6 +158,34 @@ impl HandRanker for Vec<Card> {
             (None, None, None, Some(1)) => HandRank::OnePair,
             _ => num::FromPrimitive::from_u32(6.saturating_sub(jokers as u32)).expect("valid rank"),
         }
+    }
+}
+
+trait RoundPoints {
+    fn points(&mut self) -> usize;
+}
+
+impl RoundPoints for Vec<Round> {
+    fn points(&mut self) -> usize {
+        self.sort_by(
+            |ra, rb| match ra.hand.0.get_rank() == rb.hand.0.get_rank() {
+                true => {
+                    let pairs = zip(&ra.hand.0, &rb.hand.0);
+                    for (ca, cb) in pairs {
+                        if !ca.eq(&cb) {
+                            return cb.cmp(&ca);
+                        }
+                    }
+                    return Ordering::Equal;
+                }
+                false => ra.hand.0.get_rank().cmp(&rb.hand.0.get_rank()),
+            },
+        );
+
+        self.iter()
+            .enumerate()
+            .map(|(i, r)| r.bid * (self.len() - i))
+            .sum()
     }
 }
 
