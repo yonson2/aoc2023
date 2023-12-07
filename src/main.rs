@@ -1,5 +1,6 @@
 use aoc2023::{
-    day01, day01_revised, day02, day03, day04, day05, day05_revised, day06, timer::Timer, tools,
+    day01, day01_revised, day02, day03, day04, day05, day05_revised, day06, day07, timer::Timer,
+    tools,
 };
 
 fn main() {
@@ -47,5 +48,11 @@ fn main() {
         let _timer = Timer::new();
         let data = tools::read_lines("data/day06");
         day06::solve(data)
+    }
+
+    {
+        let _timer = Timer::new();
+        let data = tools::read_lines("data/day07");
+        day07::solve(data)
     }
 }
