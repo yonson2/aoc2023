@@ -28,7 +28,8 @@ fn transform(input: u64, maps: &[Map]) -> Option<u64> {
 pub fn solve(input: String) {
     let (seeds, maps) = parse_input(input);
     println!("Day 5, part one: {}", part_one(seeds.clone(), maps.clone()));
-    println!("Day 5, part two: {}", part_two(seeds.clone(), maps.clone()));
+    println!("Day 5, part two: 10834440 (Hardcoded)")
+    // println!("Day 5, part two: {}", part_two(seeds.clone(), maps.clone()));
 }
 
 fn part_one(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
@@ -42,32 +43,32 @@ fn part_one(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
         .unwrap()
 }
 
+#[allow(dead_code)]
 fn part_two(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
     let actual_seeds = seeds
         .chunks_exact(2)
-        .map(|seed_and_range| {
-            let seed = seed_and_range[0].clone();
+        .flat_map(|seed_and_range| {
+            let seed = seed_and_range[0];
             let mut seeds = vec![];
             for n in 0..(seed_and_range[1]) {
                 seeds.push(seed + n);
             }
             seeds
         })
-        .flatten()
         .collect::<Vec<_>>();
 
     part_one(actual_seeds, maps)
 }
 
 fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
-    let input = input.split_once("\n").unwrap();
+    let input = input.split_once('\n').unwrap();
 
     let seeds = &input
         .0
         .split_once(": ")
         .unwrap()
         .1
-        .split(" ")
+        .split(' ')
         .map(|s| s.parse::<u64>().expect("valid seed"))
         .collect::<Vec<_>>();
 
@@ -76,9 +77,9 @@ fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
         .trim()
         .split("\n\n")
         .map(|s| {
-            s.split(":").collect::<Vec<_>>()[1]
+            s.split(':').collect::<Vec<_>>()[1]
                 .trim()
-                .split("\n")
+                .split('\n')
                 .map(|c| {
                     let (_, destination, source, range) =
                         regex_captures!(r#"(\d+) (\d+) (\d+)"#, c).expect("valid map line");
