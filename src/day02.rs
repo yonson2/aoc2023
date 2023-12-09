@@ -70,7 +70,7 @@ fn parse_line(line: &str) -> Game {
 
     let rounds = rounds
         .first()
-        .expect(&format!("missing rounds for game {}", id))
+        .expect("missing rounds for game")
         .split(';')
         .map(str::trim)
         .map(|r| {
