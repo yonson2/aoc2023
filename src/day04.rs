@@ -27,7 +27,7 @@ fn part_one(data: &[ScratchCard]) -> usize {
     data.iter()
         .map(|c| c.win_amount())
         .filter(|c| *c > 0)
-        .map(|c| compute_sum_part_one(c))
+        .map(compute_sum_part_one)
         .sum()
 }
 
@@ -53,7 +53,7 @@ fn part_two(data: Vec<ScratchCard>) -> usize {
 }
 
 fn compute_sum_part_one(q: usize) -> usize {
-    match q.into() {
+    match q {
         0 => unreachable!(),
         1 => 1,
         2 => 2,
@@ -78,8 +78,8 @@ fn parse_input(input: &[String]) -> Vec<ScratchCard> {
 }
 
 fn parse_raw_numbers(raw: &str) -> HashSet<usize> {
-    raw.split(" ")
-        .filter(|n| n.len() != 0)
+    raw.split(' ')
+        .filter(|n| !n.is_empty())
         .map(|n| n.parse::<usize>().expect("valid number"))
         .collect()
 }

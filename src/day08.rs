@@ -123,11 +123,11 @@ trait NodeTraits {
 
 impl NodeTraits for Node {
     fn is_starting(&self) -> bool {
-        self.chars().last().unwrap() == 'A'
+        self.ends_with('A')
     }
 
     fn is_ending(&self) -> bool {
-        self.chars().last().unwrap() == 'Z'
+        self.ends_with('Z')
     }
 }
 

@@ -65,9 +65,7 @@ fn parse(input: Vec<String>) -> Vec<Round> {
                     '2' => Card::Two,
                     _ => unreachable!(),
                 })
-                .collect::<Vec<Card>>()
-                .try_into()
-                .unwrap();
+                .collect::<Vec<Card>>();
 
             let hand = Hand(hand);
 
@@ -120,7 +118,7 @@ trait HandRanker {
 impl HandRanker for Vec<Card> {
     fn get_rank(&self) -> HandRank {
         let counts =
-            self.into_iter()
+            self.iter()
                 .counts()
                 .into_iter()
                 .fold(HashMap::new(), |mut acc, (_, count)| {
@@ -129,7 +127,7 @@ impl HandRanker for Vec<Card> {
                         .or_insert(1);
                     acc
                 });
-        let appearances = self.into_iter().counts();
+        let appearances = self.iter().counts();
         let jokers = *(appearances.get(&Card::Joker).unwrap_or(&0usize));
 
         match (
@@ -172,11 +170,11 @@ impl RoundPoints for Vec<Round> {
                 true => {
                     let pairs = zip(&ra.hand.0, &rb.hand.0);
                     for (ca, cb) in pairs {
-                        if !ca.eq(&cb) {
-                            return cb.cmp(&ca);
+                        if !ca.eq(cb) {
+                            return cb.cmp(ca);
                         }
                     }
-                    return Ordering::Equal;
+                    Ordering::Equal
                 }
                 false => ra.hand.0.get_rank().cmp(&rb.hand.0.get_rank()),
             },

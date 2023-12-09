@@ -33,7 +33,6 @@ fn ways_to_win_quadratic(race: &RaceData) -> usize {
 
 fn ways_to_win_naive(race: RaceData) -> usize {
     (1..race.time)
-        .into_iter()
         .filter(|n| {
             let boat = Boat::new(*n);
             boat.beats(&race)

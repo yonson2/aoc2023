@@ -17,8 +17,7 @@ struct Round {
 }
 
 pub fn solve(data: Vec<String>) {
-    let parsed_input: Vec<Game> = data.iter().map(parse_line).collect();
-
+    let parsed_input = data.iter().map(|l| parse_line(l)).collect::<Vec<_>>();
     println!("Day 2, part one: {}", part_one(&parsed_input));
     println!("Day 2, part two: {}", part_two(&parsed_input));
 }
@@ -27,9 +26,9 @@ fn part_one(games: &[Game]) -> u32 {
     let games: Vec<&Game> = games
         .iter()
         .filter(|g| {
-            g.rounds.iter().fold(true, |acc, curr| {
-                acc && (curr.red <= MAX_RED && curr.green <= MAX_GREEN && curr.blue <= MAX_BLUE)
-            })
+            g.rounds
+                .iter()
+                .all(|curr| curr.red <= MAX_RED && curr.green <= MAX_GREEN && curr.blue <= MAX_BLUE)
         })
         .collect();
 
@@ -56,7 +55,7 @@ fn part_two(games: &[Game]) -> u32 {
         .fold(0, |acc, curr| acc + curr.red * curr.green * curr.blue)
 }
 
-fn parse_line(line: &String) -> Game {
+fn parse_line(line: &str) -> Game {
     let split = line.split(':').collect::<Vec<&str>>();
     let (game, rounds) = split.split_at(1);
 

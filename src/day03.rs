@@ -22,8 +22,8 @@ fn part_two(gears: &HashMap<(usize, usize), Vec<usize>>) -> usize {
 
 fn parse_input(input: &[String]) -> EngineMap {
     let mut grid: Grid<EnginePiece> = grid![];
-    let _ = input
-        .into_iter()
+    input
+        .iter()
         .map(|l| parse_input_line(l))
         .for_each(|row| grid.push_row(row));
 
@@ -40,13 +40,11 @@ fn parse_input(input: &[String]) -> EngineMap {
                     EnginePiece::Numeric(c) => {
                         current_numbers.push((x, y, c));
                         // check end of row. end of "line"
-                        if y == grid.cols() - 1 {
-                            if !current_numbers.clone().is_empty() {
-                                // Now we have the x, the y and the number.
-                                if let Some(n) = get_engine_number(current_numbers.clone(), &grid) {
-                                    numbers.push(n);
-                                    current_numbers.clear();
-                                }
+                        if y == grid.cols() - 1 && !current_numbers.clone().is_empty() {
+                            // Now we have the x, the y and the number.
+                            if let Some(n) = get_engine_number(current_numbers.clone(), &grid) {
+                                numbers.push(n);
+                                current_numbers.clear();
                             }
                         }
                     }
@@ -85,11 +83,11 @@ fn parse_input(input: &[String]) -> EngineMap {
     }
 }
 
-fn parse_input_line(line: &String) -> Vec<EnginePiece> {
+fn parse_input_line(line: &str) -> Vec<EnginePiece> {
     line.chars()
         .map(|c| match c {
             c if c.is_numeric() => EnginePiece::Numeric(c),
-            c if c == '.' => EnginePiece::Period,
+            '.' => EnginePiece::Period,
             c => EnginePiece::Symbol(c),
         })
         .collect()
@@ -101,7 +99,7 @@ fn get_engine_number(
 ) -> Option<EngineNumber> {
     if numbers
         .iter()
-        .any(|(x, y, g)| EnginePiece::Numeric(g.clone()).is_engine_part(*x, *y, grid))
+        .any(|(x, y, g)| EnginePiece::Numeric(*g).is_engine_part(*x, *y, grid))
     {
         let (mut y_start, mut y_end, mut x) = (0, 0, 0);
         let value = numbers
@@ -159,10 +157,7 @@ impl EnginePiece {
                 .get_neighbors(x, y)
                 .iter()
                 .filter(|(_, _, n)| n.is_some())
-                .any(|(_, _, x)| match x.unwrap() {
-                    Self::Symbol(_) => true,
-                    _ => false,
-                }),
+                .any(|(_, _, x)| matches!(x.unwrap(), Self::Symbol(_))),
         }
     }
 }
