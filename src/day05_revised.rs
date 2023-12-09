@@ -1,28 +1,97 @@
+use std::cmp::{max, min};
+use std::ops::Range;
+
 use lazy_regex::regex_captures;
 use rayon::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 struct Map {
-    source: u64,
-    destination: u64,
-    range: u64,
+    source_start: i64,
+    destination_start: i64,
+    range: i64,
 }
 
 impl Map {
-    fn source_contains(&self, input: u64) -> bool {
-        (input >= self.source) && (input < self.source + self.range)
+    fn source_contains(&self, input: i64) -> bool {
+        (input >= self.source_start) && (input < self.source_start + self.range)
+    }
+
+    fn intersection_with_seed_range(&self, seed: &SeedRange) -> SeedRange {
+        max(seed.start, self.destination_start)..min(seed.end, self.destination_start + self.range)
     }
 }
 
 /// transform takes an input (i.e. seed) and its maps and returns the next input (i.e. soil)
-fn transform(input: u64, maps: &[Map]) -> u64 {
+fn transform(input: i64, maps: &[Map]) -> i64 {
     for map in maps {
         if map.source_contains(input) {
-            let diff = input - map.source;
-            return map.destination + diff;
+            let diff = input - map.source_start;
+            return map.destination_start + diff;
         }
     }
     input
+}
+
+fn transform_range(range: SeedRange, maps: &[Map]) -> Vec<SeedRange> {
+    let mut unprocessed_queue = vec![range];
+    let mut processed = vec![];
+
+    while let Some(item) = unprocessed_queue.pop() {
+        // we need to know if our range has any matching values for our map.
+        let mapped_items = maps.iter().find(|&map| {
+            let intersection = map.intersection_with_seed_range(&item);
+            !intersection.is_empty()
+        });
+
+        let Some(&map) = mapped_items else {
+            // if we don't have a match we can consider this range processed.
+            processed.push(item);
+            continue;
+        };
+
+        let Map {
+            destination_start,
+            source_start,
+            range,
+        } = map;
+
+        let SeedRange {
+            start: item_start,
+            end: item_end,
+        } = item;
+
+        let source_end = source_start + range;
+
+        //Now, we need to make sure that:
+        // 1. Seed is contained in transformation.
+        // 2. Our map doesn't include item but includes item's left boundary.
+        // 3. Our map doesn't include item but includes item's right boundary.
+        // 4. Our map is smaller than item and fully contained in it.
+        // 5. Our map doesn't intersect with seed.
+
+        let offset = destination_start - source_start;
+        let intersection = map.intersection_with_seed_range(&item);
+
+        processed.push(Range {
+            start: intersection.start + offset,
+            end: intersection.end + offset,
+        });
+
+        if item_start < source_start {
+            unprocessed_queue.push(Range {
+                start: item_start,
+                end: intersection.start - 1,
+            });
+        }
+
+        if item_end > source_end {
+            unprocessed_queue.push(Range {
+                start: intersection.end + 1,
+                end: item_end,
+            });
+        }
+    }
+    processed.into_iter().collect()
 }
 
 pub fn solve(input: String) {
@@ -31,7 +100,7 @@ pub fn solve(input: String) {
     println!("Day 5, part two: {}", part_two(seeds.clone(), maps.clone()));
 }
 
-fn part_one(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
+fn part_one(seeds: Vec<i64>, maps: Vec<Vec<Map>>) -> i64 {
     seeds
         .par_iter()
         .map(|&s| maps.iter().fold(s, |acc, curr| transform(acc, curr)))
@@ -39,11 +108,39 @@ fn part_one(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
         .unwrap()
 }
 
-fn part_two(seeds: Vec<u64>, maps: Vec<Vec<Map>>) -> u64 {
+type SeedRange = Range<i64>;
+
+fn part_two(seeds: Vec<i64>, maps: Vec<Vec<Map>>) -> i64 {
+    let actual_seeds = seeds
+        .chunks_exact(2)
+        .map(|seed_and_range| SeedRange {
+            start: seed_and_range[0],
+            end: seed_and_range[1] + seed_and_range[0],
+        })
+        .collect::<Vec<_>>();
+
+    let a = actual_seeds
+        .into_iter()
+        .map(|sr| {
+            maps.iter().fold(vec![sr], |acc, curr| {
+                let previous_step = acc.clone();
+                let mut processed = Vec::new();
+                previous_step.iter().for_each(|r| {
+                    let mut transformed = transform_range(r.clone(), curr).to_vec();
+                    processed.append(&mut transformed);
+                });
+                processed
+            })
+        })
+        .collect::<Vec<_>>();
+    println!(
+        "LEN: {}",
+        a.iter().flatten().map(|a| a.start).min().unwrap()
+    );
     0
 }
 
-fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
+fn parse_input(input: String) -> (Vec<i64>, Vec<Vec<Map>>) {
     let input = input.split_once("\n").unwrap();
 
     let seeds = &input
@@ -52,7 +149,7 @@ fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
         .unwrap()
         .1
         .split(" ")
-        .map(|s| s.parse::<u64>().expect("valid seed"))
+        .map(|s| s.parse::<i64>().expect("valid seed"))
         .collect::<Vec<_>>();
 
     let maps = &input
@@ -67,13 +164,13 @@ fn parse_input(input: String) -> (Vec<u64>, Vec<Vec<Map>>) {
                     let (_, destination, source, range) =
                         regex_captures!(r#"(\d+) (\d+) (\d+)"#, c).expect("valid map line");
                     let (destination, source, range) = (
-                        destination.parse::<u64>().expect("valid destination"),
-                        source.parse::<u64>().expect("valid source"),
-                        range.parse::<u64>().expect("valid range"),
+                        destination.parse::<i64>().expect("valid destination"),
+                        source.parse::<i64>().expect("valid source"),
+                        range.parse::<i64>().expect("valid range"),
                     );
                     Map {
-                        source,
-                        destination,
+                        source_start: source,
+                        destination_start: destination,
                         range,
                     }
                 })
