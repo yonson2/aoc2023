@@ -1,3 +1,4 @@
+use crate::utils::LookAround;
 use std::collections::{HashMap, HashSet};
 
 use grid::{grid, Grid};
@@ -159,30 +160,6 @@ impl EnginePiece {
                 .filter(|(_, _, n)| n.is_some())
                 .any(|(_, _, x)| matches!(x.unwrap(), Self::Symbol(_))),
         }
-    }
-}
-
-trait LookAround {
-    fn get_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize, Option<&EnginePiece>)>;
-}
-
-impl LookAround for Grid<EnginePiece> {
-    fn get_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize, Option<&EnginePiece>)> {
-        let neighbors = [
-            (row.wrapping_sub(1), col),
-            (row.wrapping_add(1), col),
-            (row, col.wrapping_sub(1)),
-            (row, col.wrapping_add(1)),
-            (row.wrapping_sub(1), col.wrapping_sub(1)),
-            (row.wrapping_sub(1), col.wrapping_add(1)),
-            (row.wrapping_add(1), col.wrapping_sub(1)),
-            (row.wrapping_add(1), col.wrapping_add(1)),
-        ];
-
-        neighbors
-            .iter()
-            .map(|(r, c)| (*r, *c, self.get(*r, *c)))
-            .collect()
     }
 }
 
