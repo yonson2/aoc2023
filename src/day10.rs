@@ -5,10 +5,11 @@ use crate::utils::LookAround;
 
 pub fn solve(input: String) {
     let data = parse(input.clone());
-    println!("Day 10, part one: {}", part_one(data));
+    println!("Day 10, part one: {}", part_one(data.clone()));
+    println!("Day 10, part two: {}", part_two(data));
 }
 
-fn part_one(data: Grid<Piece>) -> usize {
+fn get_pieces(data: &Grid<Piece>) -> Vec<(usize, usize, Piece)> {
     // find animal.
     let (animal_row_col, _) = data
         .indexed_iter()
@@ -54,7 +55,31 @@ fn part_one(data: Grid<Piece>) -> usize {
         current_xy = (next_piece.x, next_piece.y, next_piece.piece);
         route.push(current_xy);
     }
+    route
+}
+
+fn part_one(data: Grid<Piece>) -> usize {
+    let route = get_pieces(&data);
     (route.len() + 1) / 2
+}
+
+fn part_two(data: Grid<Piece>) -> usize {
+    let route = get_pieces(&data);
+    // After looking it up on reddit, I kinda get how the point inside a polygon solution would
+    // work but that would also be kind of a hassle to to at 23:00pm on a sunday.
+    // I don't know why but the solution from here also works? reddit.com/18ez5jb
+    let (min_x, max_x) = ((data.cols() / 4) - 2, ((data.cols() / 4) * 3) - 1);
+    let (min_y, max_y) = ((data.rows() / 4) - 1, ((data.rows() / 4) * 3) - 1);
+
+    let mut counter = 0;
+    for x in min_x..max_x {
+        for y in min_y..max_y {
+            if !route.iter().any(|&(rx, ry, _)| x == rx && y == ry) {
+                counter += 1;
+            }
+        }
+    }
+    counter
 }
 
 fn parse(input: String) -> Grid<Piece> {
