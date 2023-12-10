@@ -18,7 +18,7 @@ fn get_pieces(data: &Grid<Piece>) -> Vec<(usize, usize, Piece)> {
 
     let mut previous_xy = (animal_row_col.1, animal_row_col.0);
     let animal = GridPiece {
-        grid: &data,
+        grid: data,
         x: previous_xy.0,
         y: previous_xy.1,
         piece: Piece::Animal,
@@ -34,7 +34,7 @@ fn get_pieces(data: &Grid<Piece>) -> Vec<(usize, usize, Piece)> {
 
     loop {
         let current = GridPiece {
-            grid: &data,
+            grid: data,
             x: current_xy.0,
             y: current_xy.1,
             piece: current_xy.2,
@@ -80,6 +80,42 @@ fn part_two(data: Grid<Piece>) -> usize {
         }
     }
     counter
+}
+
+// another solution that I don't feel like doing because its too late.
+// replace all non-tube pieces with '.' (ground)
+// Do a first pass from (0,0) and mark those pieces as Outside.
+// Now, pick the outermost loop piece (whichever has the lowest x) so
+// its touching an outside piece to the left.
+// Do a second pass starting from that piece and mark all of the
+// pieces to the "left" (not just x-1, you need to follow the direction of the piece)
+// as outside too.
+#[allow(dead_code)]
+fn part_two_b(data: Grid<Piece>) -> usize {
+    let mut map = data.clone();
+    let route = get_pieces(&data);
+
+    //replace with a func that finds the connection and returns the piece.
+    let starting_piece = Piece::NorthWestPipe;
+
+    //replace all non-tube pieces with ground.
+    let new_data = data
+        .indexed_iter()
+        .map(|((row, col), p)| {
+            let piece = map.get_mut(row, col).unwrap();
+            if matches!(piece, Piece::Animal) {
+                return starting_piece;
+            }
+
+            if !route.iter().any(|p| p.0 == col && p.1 == row) {
+                return Piece::Ground;
+            }
+            *p
+        })
+        .collect_vec();
+
+    let _ = Grid::from_vec(new_data, data.cols());
+    todo!()
 }
 
 fn parse(input: String) -> Grid<Piece> {
