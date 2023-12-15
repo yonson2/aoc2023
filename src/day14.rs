@@ -37,7 +37,7 @@ impl Dish {
     fn push_north(&mut self) -> Self {
         // skip the first row, we start at 1.
         let mut modify = true;
-        let mut row_modified = false;
+        let mut row_modified: bool;
 
         while modify {
             row_modified = false;
@@ -63,7 +63,7 @@ impl Dish {
     fn push_west(&mut self) -> Self {
         // skip the first row, we start at 1.
         let mut modify = true;
-        let mut row_modified = false;
+        let mut row_modified: bool;
 
         while modify {
             row_modified = false;
@@ -88,7 +88,7 @@ impl Dish {
     fn push_south(&mut self) -> Self {
         // skip the first row, we start at 1.
         let mut modify = true;
-        let mut row_modified = false;
+        let mut row_modified: bool;
 
         while modify {
             row_modified = false;
@@ -114,7 +114,7 @@ impl Dish {
     fn push_east(&mut self) -> Self {
         // skip the first row, we start at 1.
         let mut modify = true;
-        let mut row_modified = false;
+        let mut row_modified: bool;
 
         while modify {
             row_modified = false;
